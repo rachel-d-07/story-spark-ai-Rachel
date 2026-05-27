@@ -32,6 +32,7 @@ const normalizeStoryPayload = (payload: IAIModel) => ({
   wordLength: payload.wordLength ?? 250,
   numStories: payload.numStories ?? 2,
   language: payload.language ?? "English",
+  tone: payload.tone ?? undefined, // NEW: pass tone through, undefined if not provided
 });
 
 const mapGenerationError = (error: unknown, message: string): never => {
@@ -51,7 +52,7 @@ const mapGenerationError = (error: unknown, message: string): never => {
 };
 
 const aiModelGenerate = async (payload: IAIModel, _token: ITokenPayload) => {
-  const { prompt, wordLength, numStories, language } =
+  const { prompt, wordLength, numStories, language, tone } =
     normalizeStoryPayload(payload);
 
   try {
@@ -62,7 +63,8 @@ const aiModelGenerate = async (payload: IAIModel, _token: ITokenPayload) => {
           wordLength,
           numStories,
           language,
-          signal
+          signal,
+          tone, // NEW: pass tone to utils
         ),
       AUTHENTICATED_GENERATION_TIMEOUT_MS
     );
@@ -74,7 +76,7 @@ const aiModelGenerate = async (payload: IAIModel, _token: ITokenPayload) => {
 };
 
 const aiFreeModelGenerate = async (payload: IAIModel) => {
-  const { prompt, wordLength, numStories, language } =
+  const { prompt, wordLength, numStories, language, tone } =
     normalizeStoryPayload(payload);
 
   try {
@@ -85,7 +87,8 @@ const aiFreeModelGenerate = async (payload: IAIModel) => {
           wordLength,
           numStories,
           language,
-          signal
+          signal,
+          tone, // NEW: pass tone to utils
         ),
       FREE_GENERATION_TIMEOUT_MS
     );
