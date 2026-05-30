@@ -59,18 +59,29 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute = ({ allowedRoles, element }: ProtectedRouteProps) => {
   const user = getUserInfo();
-  if (!user) return <Navigate to="/login" replace />;
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
-  return element ?? <Outlet />;
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return element ? element : <Outlet />;
 };
 
+// =========================================================================
+// 2. CENTRAL ROUTER MATRIX (Initialized exactly once in the global scope)
+// =========================================================================
 const ALL_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN, USER_ROLE.WRITER, USER_ROLE.USER];
+const ELEVATED_ADMIN_ROLES = [USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN];
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: (
       <>
+        <MagicCursorComponent />
         <ScrollToTop />
         <RootLayout>
           <Outlet />
@@ -100,6 +111,8 @@ const router = createBrowserRouter([
       { path: "guidelines", element: <GuidelinesComponent /> },
       { path: "contributors", element: <ContributorsComponent /> },
       { path: "report-bug", element: <ReportBug /> },
+
+      // Protected Sub-Tree running under the RootLayout context
       {
         element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
         children: [
@@ -113,16 +126,21 @@ const router = createBrowserRouter([
       { path: "*", element: <NotFoundComponent /> },
     ],
   },
+  
+  // Isolated layout branches (Bypassing public navigation headers entirely)
   { path: "/auth/email-validation", element: <EmailValidationComponent /> },
   { path: "/payment", element: <PaymentComponent /> },
+
   { path: "/collab", element: <CollabHome /> },
   { path: "/collab/:roomId", element: <CollabRoom /> },
+
+  // Administrative Dashboard Infrastructure Tree
   {
     path: "/dashboard",
-    element: <ProtectedRoute allowedRoles={ALL_ROLES} />,
+    element: <ProtectedRoute allowedRoles={ALL_ROLES} />, 
     children: [
       {
-        element: <DashboardLayout />,
+        element: <DashboardLayout />, 
         children: [
           { index: true, element: <DashboardComponent /> },
           { path: "profile", element: <ProfileComponent /> },
@@ -146,8 +164,15 @@ const router = createBrowserRouter([
   },
 ]);
 
+// =========================================================================
+// APP
+// =========================================================================
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+    </>
+  );
 }
 
 export default App;
