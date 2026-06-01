@@ -12,6 +12,10 @@ export interface IPostPayload {
   tag: string;
   imageURL: string;
   topic: ITopic[];
+  language?: string;
+  emotions?: string[];
+  genre?: string;
+  isPublished?: boolean;
 }
 
 export interface IPost extends IPostPayload {
@@ -29,7 +33,7 @@ export interface IPost extends IPostPayload {
   attachments?: string[];
   comments?: Types.ObjectId[];
   reactions?: Types.ObjectId[];
-  bookmarks?: Types.ObjectId[];
+  bookmarksCount: number;
 }
 
 export type PostModel = Model<IPost, object>;
